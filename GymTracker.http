@@ -1,0 +1,7 @@
+@gymtracker_HostAddress = http://localhost:5078
+
+GET {{gymtracker_HostAddress}}/api/User/init
+Accept: application/json
+
+
+###

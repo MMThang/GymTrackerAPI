@@ -1,0 +1,103 @@
+# =========================
+# Build folders
+# =========================
+bin/
+obj/
+
+# =========================
+# User-specific files
+# =========================
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Visual Studio
+# =========================
+.vs/
+
+# =========================
+# Rider / JetBrains
+# =========================
+.idea/
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# ASP.NET appsettings secrets
+# =========================
+appsettings.Development.json
+appsettings.Local.json
+
+# =========================
+# User Secrets
+# =========================
+secrets.json
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
+
+# =========================
+# EF Core local database
+# =========================
+*.db
+*.db-shm
+*.db-wal
+
+# =========================
+# Publish output
+# =========================
+publish/
+
+# =========================
+# Node modules (if frontend exists)
+# =========================
+node_modules/
+
+# =========================
+# OS generated files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Test results
+# =========================
+TestResults/
+
+# =========================
+# Coverage reports
+# =========================
+coverage/
+*.coverage
+*.coveragexml
+
+# =========================
+# NuGet
+# =========================
+*.nupkg
+.nuget/
+
+# =========================
+# Resharper
+# =========================
+_ReSharper*/
+*.DotSettings.user

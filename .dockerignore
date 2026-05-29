@@ -1,0 +1,8 @@
+﻿bin/
+obj/
+.git/
+.vs/
+Dockerfile
+docker-compose.yml
+README.md
+appsettings.Development.json
