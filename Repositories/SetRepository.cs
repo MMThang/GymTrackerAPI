@@ -23,10 +23,16 @@ namespace GymTracker.Repositories
 
         public async Task<bool> createSet(Guid exerciseId, SetDTO setDTO, IDbTransaction? transaction = null)
         {
+            // Validate: if isBodyWeight is false, weight must have a value
+            if (!setDTO.isBodyWeight && setDTO.weight == null)
+            {
+                throw new ArgumentException("Weight must have a value when isBodyWeight is false.");
+            }
+
             if (transaction != null)
             {
                 await transaction.Connection.ExecuteAsync(
-                    "INSERT INTO \"Sets\" (\"ExerciseId\", \"Weight\", \"Reps\", \"IsBodyWeight\") VALUES (@ExerciseId, @Weight, @Reps, @IsBodyWeight)",
+                    "INSERT INTO \"Sets\" (\"SetId\", \"ExerciseId\", \"Weight\", \"Reps\", \"IsBodyWeight\") VALUES (gen_random_uuid(), @ExerciseId, @Weight, @Reps, @IsBodyWeight)",
                     new { ExerciseId = exerciseId, Weight = setDTO.weight, Reps = setDTO.reps, IsBodyWeight = setDTO.isBodyWeight },
                     transaction
                 );
@@ -36,7 +42,7 @@ namespace GymTracker.Repositories
             {
                 await using var connection = GetConnection();
                 await connection.ExecuteAsync(
-                    "INSERT INTO \"Sets\" (\"ExerciseId\", \"Weight\", \"Reps\", \"IsBodyWeight\") VALUES (@ExerciseId, @Weight, @Reps, @IsBodyWeight)",
+                    "INSERT INTO \"Sets\" (\"SetId\", \"ExerciseId\", \"Weight\", \"Reps\", \"IsBodyWeight\") VALUES (gen_random_uuid(), @ExerciseId, @Weight, @Reps, @IsBodyWeight)",
                     new { ExerciseId = exerciseId, Weight = setDTO.weight, Reps = setDTO.reps, IsBodyWeight = setDTO.isBodyWeight }
                 );
             }
@@ -45,6 +51,12 @@ namespace GymTracker.Repositories
 
         public async Task<bool> updateSet(Guid setId, SetDTO setDTO, IDbTransaction? transaction = null)
         {
+            // Validate: if isBodyWeight is false, weight must have a value
+            if (!setDTO.isBodyWeight && setDTO.weight == null)
+            {
+                throw new ArgumentException("Weight must have a value when isBodyWeight is false.");
+            }
+
             if (transaction != null)
             {
                 await transaction.Connection.ExecuteAsync(

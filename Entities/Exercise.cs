@@ -4,7 +4,7 @@ namespace GymTracker.Entities
 {
     public class Exercise
     {
-        public Guid ExerciseId { get; set; } = Guid.NewGuid();
+        public Guid ExerciseId { get; set; }
         public Guid WorkoutSessionId { get; set; }
         public WorkoutSession WorkoutSession { get; set; }
         public string ExerciseName { get; set; } = null!;
