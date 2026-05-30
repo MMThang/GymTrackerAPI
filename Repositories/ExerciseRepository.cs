@@ -27,7 +27,7 @@ namespace GymTracker.Repositories
             if (transaction != null)
             {
                 exerciseId = await transaction.Connection.QueryFirstOrDefaultAsync<Guid>(
-                    "INSERT INTO \"Exercises\" (\"WorkoutSessionId\", \"ExerciseName\") VALUES (@WorkoutSessionId, @ExerciseName) RETURNING \"ExerciseId\"",
+                    "INSERT INTO \"Exercises\" (\"ExerciseId\", \"WorkoutSessionId\", \"ExerciseName\") VALUES (gen_random_uuid(), @WorkoutSessionId, @ExerciseName) RETURNING \"ExerciseId\"",
                     new { WorkoutSessionId = workoutSessionId, ExerciseName = exerciseName },
                     transaction
                 );
@@ -37,7 +37,7 @@ namespace GymTracker.Repositories
             {
                 await using var connection = GetConnection();
                 exerciseId = await connection.QueryFirstOrDefaultAsync<Guid>(
-                    "INSERT INTO \"Exercises\" (\"WorkoutSessionId\", \"ExerciseName\") VALUES (@WorkoutSessionId, @ExerciseName) RETURNING \"ExerciseId\"",
+                    "INSERT INTO \"Exercises\" (\"ExerciseId\", \"WorkoutSessionId\", \"ExerciseName\") VALUES (gen_random_uuid(), @WorkoutSessionId, @ExerciseName) RETURNING \"ExerciseId\"",
                     new { WorkoutSessionId = workoutSessionId, ExerciseName = exerciseName }
                 );
             }
