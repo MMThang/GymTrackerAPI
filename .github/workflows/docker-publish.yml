@@ -80,3 +80,25 @@ jobs:
           push: true
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gym-tracker-api-dev:latest
+  deploy:
+    name: Deploy To EC2
+
+    needs:
+      - build-production
+      - build-development
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            cd /home/deploy/gymtracker
+
+            ./start-backend-script.sh
