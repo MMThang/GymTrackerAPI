@@ -21,9 +21,13 @@ namespace GymTracker.Controllers
                 var response = await _tokenRepository.ValidateRefreshToken(authorizationHeader);
                 return Ok(response);
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

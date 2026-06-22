@@ -31,7 +31,6 @@ namespace GymTracker.Repositories
                     new { WorkoutSessionId = workoutSessionId, ExerciseName = exerciseName },
                     transaction
                 );
-                Console.WriteLine($"[TRANSACTION] Exercise created with ID: {exerciseId}");
             }
             else
             {
