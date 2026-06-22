@@ -36,6 +36,18 @@ namespace GymTracker.Controllers
                 var response = await _userService.register(registerDTO.username, registerDTO.password, registerDTO.confirmPassword);
                 return Ok(response);
             }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return UnprocessableEntity(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return UnprocessableEntity(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -49,6 +61,10 @@ namespace GymTracker.Controllers
             {
                 var response = await _userService.login(loginDTO.username, loginDTO.password);
                 return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {

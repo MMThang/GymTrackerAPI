@@ -10,6 +10,5 @@ namespace GymTracker.Interfaces
         Task<WorkoutSessionDetailDTO> getWorkoutSession(Guid workoutSessionId);
         Task<List<WorkoutSessionCalendarDTO>> getWorkoutSessionsByMonthYear(Guid userId, int month, int year);
         Task<bool> updateWorkoutSession(UpdateWorkoutSessionDTO updateDTO);
-        Task<bool> deleteWorkoutSession(Guid workoutSessionId);
     }
 }

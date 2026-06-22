@@ -39,7 +39,7 @@ namespace GymTracker.Repositories
             {
                 if (!DateOnly.TryParseExact(workoutSessionDTO.createDate, "yyyy/MM/dd", null, System.Globalization.DateTimeStyles.None, out var parsedCreateDate))
                 {
-                    throw new Exception("Invalid createDate format. Use yyyy/mm/dd");
+                    throw new FormatException("Invalid createDate format. Use yyyy/mm/dd");
                 }
 
                 // Check if user already has a workout session with the same create date
@@ -50,7 +50,7 @@ namespace GymTracker.Repositories
 
                 if (existingWorkoutSession != null)
                 {
-                    throw new Exception("User already has a workout session on this date");
+                    throw new InvalidOperationException("User already has a workout session on this date");
                 }
 
                 var workoutSession = new WorkoutSession
@@ -75,7 +75,7 @@ namespace GymTracker.Repositories
             }
             else
             {
-                throw new Exception("User not found");
+                throw new KeyNotFoundException("User not found");
             }
         }
 
@@ -94,7 +94,7 @@ namespace GymTracker.Repositories
             var userExists = await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"UserId\" = @UserId", new { UserId = userId });
             if (userExists == null)
             {
-                throw new Exception("User not found");
+                throw new KeyNotFoundException("User not found");
             }
 
             var sql = @"
@@ -129,7 +129,7 @@ namespace GymTracker.Repositories
 
             if (workoutSession == null)
             {
-                throw new Exception("WorkoutSession not found");
+                throw new KeyNotFoundException("WorkoutSession not found");
             }
 
             var exercisesSql = @"
@@ -183,7 +183,7 @@ namespace GymTracker.Repositories
             var userExists = await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"UserId\" = @UserId", new { UserId = userId });
             if (userExists == null)
             {
-                throw new Exception("User not found");
+                throw new KeyNotFoundException("User not found");
             }
 
             // Get today's date for validation
@@ -193,7 +193,7 @@ namespace GymTracker.Repositories
             // Validate month is not in the future
             if ((requestedDate > today) || (requestedDate < oneYearAgo))
             {
-                throw new Exception("Cannot request months");
+                throw new ArgumentOutOfRangeException(nameof(month), "Cannot request months outside the valid range");
             }
 
             // Query workout sessions for the given month/year
@@ -249,7 +249,7 @@ namespace GymTracker.Repositories
                 );
 
                 if (workoutSession == null)
-                    throw new Exception("Workout session not found");
+                    throw new KeyNotFoundException("Workout session not found");
 
                 // Update session
                 if (
@@ -291,7 +291,7 @@ namespace GymTracker.Repositories
                         var exerciseId = exerciseDTO.exerciseId.Value;
 
                         if (exercisesDictionary.TryGetValue(exerciseId, out var existingExercise) == false)
-                            throw new Exception($"Exercise with ID {exerciseId} not found");
+                            throw new KeyNotFoundException($"Exercise with ID {exerciseId} not found");
 
                         processedExerciseIds.Add(exerciseId);
 
@@ -311,7 +311,7 @@ namespace GymTracker.Repositories
                             {
                                 var setId = setDTO.setId.Value;
                                 if (setsDictionary.TryGetValue(setId, out var set) == false)
-                                    throw new Exception($"Set with ID {setId} not found");
+                                    throw new KeyNotFoundException($"Set with ID {setId} not found");
 
                                 processedSetIds.Add(setId);
                                 if (setDTO.weight != set.Weight || setDTO.reps != set.Reps || setDTO.isBodyWeight != set.IsBodyWeight)
@@ -383,12 +383,5 @@ namespace GymTracker.Repositories
                 throw;
             }
         }
-
-        public async Task<bool> deleteWorkoutSession(Guid workoutSessionId)
-        {
-            throw new NotImplementedException();
-        }
-
-
     }
 }

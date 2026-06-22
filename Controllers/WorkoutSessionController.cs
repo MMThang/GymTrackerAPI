@@ -32,6 +32,18 @@ namespace GymTracker.Controllers
             {
                 return Unauthorized(ex.Message);
             }
+            catch (FormatException ex)
+            {
+                return UnprocessableEntity(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -53,6 +65,10 @@ namespace GymTracker.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
@@ -82,6 +98,10 @@ namespace GymTracker.Controllers
             {
                 return Unauthorized(ex.Message);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -103,6 +123,14 @@ namespace GymTracker.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return UnprocessableEntity(ex.Message);
             }
             catch (Exception ex)
             {
@@ -133,33 +161,9 @@ namespace GymTracker.Controllers
             {
                 return Unauthorized(ex.Message);
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [Authorize]
-        [HttpDelete("workout-session/{workoutSessionId}")]
-        public async Task<IActionResult> deleteWorkoutSession(Guid workoutSessionId)
-        {
-            try
-            {
-                // Validate that the workout session belongs to the authenticated user
-                var workoutUserId = await _workoutSessionService.getWorkoutSessionUserId(workoutSessionId);
-                if (workoutUserId == null)
-                {
-                    return NotFound("Workout session not found");
-                }
-
-                User.ValidateUserAccess(workoutUserId.Value);
-
-                var response = await _workoutSessionService.deleteWorkoutSession(workoutSessionId);
-                return Ok(response);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {

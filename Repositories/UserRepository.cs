@@ -27,79 +27,63 @@ namespace GymTracker.Repositories
 
         public async Task<bool> register(string username, string password, string confirmPassword)
         {
-            try
+            if (username.Length < 6)
             {
-                if (username.Length < 6)
-                {
-                    throw new Exception("Username minimum 6 characters");
-                }
-                if (password.Length < 6 || confirmPassword.Length < 6)
-                {
-                    throw new Exception("Password minimum 6 characters");
-                }
+                throw new ArgumentOutOfRangeException(nameof(username), "Username minimum 6 characters");
+            }
+            if (password.Length < 6 || confirmPassword.Length < 6)
+            {
+                throw new ArgumentOutOfRangeException(nameof(password), "Password minimum 6 characters");
+            }
 
-
-                await using var connection = GetConnection();
-                var existingUser = await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"Username\" = @Username", new { Username = username });
-                if (existingUser == null)
+            await using var connection = GetConnection();
+            var existingUser = await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"Username\" = @Username", new { Username = username });
+            if (existingUser == null)
+            {
+                if (password == confirmPassword)
                 {
-                    if (password == confirmPassword)
+                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+                    await _context.Users.AddAsync(new User
                     {
-                        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-                        await _context.Users.AddAsync(new User
-                        {
-                            Username = username,
-                            Password = hashedPassword
-                        });
-                        await _context.SaveChangesAsync();
-                        return true;
-                    }
-                    else
-                    {
-                        throw new Exception("Password don't match");
-                    }
+                        Username = username,
+                        Password = hashedPassword
+                    });
+                    await _context.SaveChangesAsync();
+                    return true;
                 }
                 else
                 {
-                    throw new Exception("User already existed");
+                    throw new ArgumentException("Password don't match");
                 }
             }
-            catch (Exception ex)
+            else
             {
-                throw new Exception("Register failed " + ex);
+                throw new InvalidOperationException("User already existed");
             }
         }
         public async Task<UserLoginResponse> login(string username, string password)
         {
-            try
-            {
-                await using var connection = GetConnection();
-                var existingUser = await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"Username\" = @Username", new { Username = username });
+            await using var connection = GetConnection();
+            var existingUser = await connection.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"Username\" = @Username", new { Username = username });
 
-                if (existingUser == null)
+            if (existingUser == null)
+            {
+                throw new UnauthorizedAccessException("Username does not exist");
+            }
+            else
+            {
+                if (BCrypt.Net.BCrypt.Verify(password, existingUser.Password))
                 {
-                    throw new UnauthorizedAccessException("Username does not exist");
+                    return new UserLoginResponse
+                    {
+                        AccessToken = _refreshTokenRepository.GenerateAccessToken(existingUser),
+                        RefreshToken = await _refreshTokenRepository.GenerateRefreshToken(existingUser.UserId)
+                    };
                 }
                 else
                 {
-                    if (BCrypt.Net.BCrypt.Verify(password, existingUser.Password))
-                    {
-
-                        return new UserLoginResponse
-                        {
-                            AccessToken = _refreshTokenRepository.GenerateAccessToken(existingUser),
-                            RefreshToken = await _refreshTokenRepository.GenerateRefreshToken(existingUser.UserId)
-                        };
-                    }
-                    else
-                    {
-                        throw new UnauthorizedAccessException("Incorrect password");
-                    }
+                    throw new UnauthorizedAccessException("Incorrect password");
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Login failed: " + ex.Message);
             }
         }
     }

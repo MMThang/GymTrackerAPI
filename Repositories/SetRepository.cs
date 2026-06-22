@@ -36,7 +36,6 @@ namespace GymTracker.Repositories
                     new { ExerciseId = exerciseId, Weight = setDTO.weight, Reps = setDTO.reps, IsBodyWeight = setDTO.isBodyWeight },
                     transaction
                 );
-                Console.WriteLine($"[TRANSACTION] Set created successfully for ExerciseId: {exerciseId}");
             }
             else
             {
