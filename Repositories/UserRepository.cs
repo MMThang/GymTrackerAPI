@@ -46,6 +46,8 @@ namespace GymTracker.Repositories
                     await _context.Users.AddAsync(new User
                     {
                         Username = username,
+                        Email = username, // Temporary: using username as email until email-based registration is implemented
+                        EmailVerified = false,
                         Password = hashedPassword
                     });
                     await _context.SaveChangesAsync();

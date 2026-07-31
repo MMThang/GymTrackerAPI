@@ -3,6 +3,7 @@ using GymTracker.Data;
 using GymTracker.Handler;
 using GymTracker.Interfaces;
 using GymTracker.Repositories;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -42,6 +43,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()!;
 
 builder.Services.AddCors(options =>
@@ -50,12 +52,15 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins(allowedOrigins)
                .AllowAnyHeader()
-               .AllowAnyMethod();
+               .AllowAnyMethod()
+               .AllowCredentials();
     });
 });
 
+builder.Services.Configure<GoogleOAuthSettings>(builder.Configuration.GetSection("GoogleOAuth"));
 builder.Services.AddScoped<IUser, UserRepository>();
 builder.Services.AddScoped<IRefreshToken, RefreshTokenRepository>();
+builder.Services.AddHttpClient<IGoogleAuth, GoogleAuthRepository>();
 builder.Services.AddScoped<IWorkoutSession, WorkoutSessionRepository>();
 builder.Services.AddScoped<IExercise, ExerciseRepository>();
 builder.Services.AddScoped<ISet, SetRepository>();
@@ -65,6 +70,25 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 );
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddCookie()
+    .AddGoogle(options =>
+    {
+        var clientId = builder.Configuration["GoogleOAuth:ClientId"];
+        if (clientId == null)
+        {
+            throw new ArgumentNullException(nameof(clientId));
+        }
+
+        var clientSecret = builder.Configuration["GoogleOAuth:ClientSecret"];
+        if (clientSecret == null)
+        {
+            throw new ArgumentNullException(nameof(clientSecret));
+        }
+
+        options.ClientId = clientId;
+        options.ClientSecret = clientSecret;
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters

@@ -19,6 +19,7 @@ namespace GymTracker.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<ExternalLogin> ExternalLogins { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<WorkoutSession> WorkoutSessions { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
@@ -26,6 +27,18 @@ namespace GymTracker.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ExternalLogin>()
+                .HasIndex(x => new
+                {
+                    x.Provider,
+                    x.ProviderUserId
+                })
+                .IsUnique();
+            modelBuilder.Entity<ExternalLogin>()
+                .HasOne(x => x.User)
+                .WithMany(u => u.ExternalLogins)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<RefreshToken>()
                 .HasOne(t => t.User)
                 .WithMany(u => u.RefreshTokens)

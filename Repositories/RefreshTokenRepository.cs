@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using GymTracker.Data;
 using GymTracker.Entities;
 using GymTracker.Interfaces;
 using GymTracker.Responses;
@@ -15,11 +14,9 @@ namespace GymTracker.Repositories
 {
     public class RefreshTokenRepository : IRefreshToken
     {
-        private readonly AppDBContext _context;
         private readonly IConfiguration _configuration;
-        public RefreshTokenRepository(AppDBContext context, IConfiguration config)
+        public RefreshTokenRepository(IConfiguration config)
         {
-            _context = context;
             _configuration = config;
         }
         private NpgsqlConnection GetConnection()

@@ -3,6 +3,7 @@ using System;
 using GymTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GymTracker.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260724040609_AddExternalLoginsAndEmailVerified")]
+    partial class AddExternalLoginsAndEmailVerified
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,27 +25,7 @@ namespace GymTracker.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("GymTracker.Entities.Exercise", b =>
-                {
-                    b.Property<Guid>("ExerciseId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ExerciseName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("WorkoutSessionId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ExerciseId");
-
-                    b.HasIndex("WorkoutSessionId");
-
-                    b.ToTable("Exercises");
-                });
-
-            modelBuilder.Entity("GymTracker.Entities.ExternalLogin", b =>
+            modelBuilder.Entity("ExternalLogin", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -67,7 +50,27 @@ namespace GymTracker.Migrations
                     b.HasIndex("Provider", "ProviderUserId")
                         .IsUnique();
 
-                    b.ToTable("ExternalLogins");
+                    b.ToTable("externalLogins");
+                });
+
+            modelBuilder.Entity("GymTracker.Entities.Exercise", b =>
+                {
+                    b.Property<Guid>("ExerciseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExerciseName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("WorkoutSessionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ExerciseId");
+
+                    b.HasIndex("WorkoutSessionId");
+
+                    b.ToTable("Exercises");
                 });
 
             modelBuilder.Entity("GymTracker.Entities.RefreshToken", b =>
@@ -181,6 +184,17 @@ namespace GymTracker.Migrations
                     b.ToTable("WorkoutSessions");
                 });
 
+            modelBuilder.Entity("ExternalLogin", b =>
+                {
+                    b.HasOne("GymTracker.Entities.User", "User")
+                        .WithMany("ExternalLogins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("GymTracker.Entities.Exercise", b =>
                 {
                     b.HasOne("GymTracker.Entities.WorkoutSession", "WorkoutSession")
@@ -190,17 +204,6 @@ namespace GymTracker.Migrations
                         .IsRequired();
 
                     b.Navigation("WorkoutSession");
-                });
-
-            modelBuilder.Entity("GymTracker.Entities.ExternalLogin", b =>
-                {
-                    b.HasOne("GymTracker.Entities.User", "User")
-                        .WithMany("ExternalLogins")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GymTracker.Entities.RefreshToken", b =>
