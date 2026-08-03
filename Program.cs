@@ -42,6 +42,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()!;
 
 builder.Services.AddCors(options =>
@@ -50,12 +51,15 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins(allowedOrigins)
                .AllowAnyHeader()
-               .AllowAnyMethod();
+               .AllowAnyMethod()
+               .AllowCredentials();
     });
 });
 
+builder.Services.Configure<GoogleOAuthSettings>(builder.Configuration.GetSection("GoogleOAuth"));
 builder.Services.AddScoped<IUser, UserRepository>();
 builder.Services.AddScoped<IRefreshToken, RefreshTokenRepository>();
+builder.Services.AddHttpClient<IGoogleAuth, GoogleAuthRepository>();
 builder.Services.AddScoped<IWorkoutSession, WorkoutSessionRepository>();
 builder.Services.AddScoped<IExercise, ExerciseRepository>();
 builder.Services.AddScoped<ISet, SetRepository>();
