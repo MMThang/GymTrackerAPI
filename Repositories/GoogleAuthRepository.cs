@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using Dapper;
 using Google.Apis.Auth;
 using GymTracker.Entities;
@@ -41,6 +42,14 @@ namespace GymTracker.Repositories
                 RandomNumberGenerator.GetBytes(32)
             );
 
+            var nonce = Convert.ToBase64String(
+                RandomNumberGenerator.GetBytes(32)
+            );
+
+            var codeVerifier = GenerateCodeVerifier();
+
+            var codeChallenge = GenerateCodeChallenge(codeVerifier);
+
             var queryParams = new Dictionary<string, string>
             {
                 ["client_id"] = _googleOAuthSettings.ClientId,
@@ -48,6 +57,9 @@ namespace GymTracker.Repositories
                 ["response_type"] = "code",
                 ["scope"] = "openid email profile",
                 ["state"] = state,
+                ["nonce"] = nonce,
+                ["code_challenge"] = codeChallenge,
+                ["code_challenge_method"] = "S256",
                 ["prompt"] = "select_account"
             };
 
@@ -64,11 +76,13 @@ namespace GymTracker.Repositories
             return new GoogleAuthorizationResponse
             {
                 AuthorizationUrl = authorizationUrl,
-                State = state
+                State = state,
+                Nonce = nonce,
+                CodeVerifier = codeVerifier
             };
         }
 
-        public async Task<GoogleUserInfo> HandleCallbackAsync(string code)
+        public async Task<GoogleUserInfo> HandleCallbackAsync(string code, string? nonce, string codeVerifier)
         {
             // 1. Exchange authorization code for Google tokens
             var tokenRequest = new Dictionary<string, string>
@@ -77,6 +91,7 @@ namespace GymTracker.Repositories
                 ["client_id"] = _googleOAuthSettings.ClientId,
                 ["client_secret"] = _googleOAuthSettings.ClientSecret,
                 ["redirect_uri"] = _googleOAuthSettings.RedirectUri,
+                ["code_verifier"] = codeVerifier,
                 ["grant_type"] = "authorization_code"
             };
 
@@ -120,6 +135,18 @@ namespace GymTracker.Repositories
                     googleTokens.IdToken,
                     validationSettings
                 );
+                if (string.IsNullOrEmpty(nonce))
+                {
+                    throw new UnauthorizedAccessException(
+                        "Google OAuth nonce is missing."
+                    );
+                }
+                if (payload.Nonce != nonce)
+                {
+                    throw new UnauthorizedAccessException(
+                        "Invalid Google OAuth nonce."
+                    );
+                }
             }
             catch (InvalidJwtException)
             {
@@ -241,6 +268,32 @@ namespace GymTracker.Repositories
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
+        }
+
+        private static string GenerateCodeVerifier()
+        {
+            var bytes =
+                RandomNumberGenerator.GetBytes(32);
+
+            return Convert.ToBase64String(bytes)
+                .TrimEnd('=')
+                .Replace('+', '-')
+                .Replace('/', '_');
+        }
+
+        private static string GenerateCodeChallenge(
+            string codeVerifier)
+        {
+            using var sha256 = SHA256.Create();
+
+            var bytes = Encoding.ASCII.GetBytes(codeVerifier);
+
+            var hash = sha256.ComputeHash(bytes);
+
+            return Convert.ToBase64String(hash)
+                .TrimEnd('=')
+                .Replace('+', '-')
+                .Replace('/', '_');
         }
 
         // private static string GenerateUsernameFromEmail(string email)

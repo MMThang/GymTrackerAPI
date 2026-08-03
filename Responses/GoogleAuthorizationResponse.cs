@@ -5,5 +5,9 @@ namespace GymTracker.Responses
         public string AuthorizationUrl { get; set; } = null!;
 
         public string State { get; set; } = null!;
+
+        public string Nonce { get; set; } = null!;
+
+        public string CodeVerifier { get; set; } = null!;
     }
 }
