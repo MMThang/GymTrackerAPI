@@ -125,7 +125,7 @@ namespace GymTracker.Controllers
                     {
                         HttpOnly = true,
                         Secure = Request.IsHttps,
-                        SameSite = Request.IsHttps ? SameSiteMode.Strict : SameSiteMode.Lax,
+                        SameSite = SameSiteMode.Lax,
                         MaxAge = TimeSpan.FromDays(7)
                     });
                 Response.Cookies.Append(
