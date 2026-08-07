@@ -1,0 +1,15 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /src
+
+# Copy project file first for better Docker layer caching
+COPY GymTracker.csproj ./
+
+RUN dotnet restore
+
+# Copy the remaining source code
+COPY . .
+
+# Default command
+ENTRYPOINT ["dotnet", "ef", "database", "update"]
