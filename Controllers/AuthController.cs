@@ -27,7 +27,7 @@ namespace GymTracker.Controllers
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = Request.IsHttps,
+                    Secure = true,
                     SameSite = SameSiteMode.Lax,
                     Path = "/",
                     MaxAge = TimeSpan.FromMinutes(10)
@@ -39,7 +39,7 @@ namespace GymTracker.Controllers
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = Request.IsHttps,
+                    Secure = true,
                     SameSite = SameSiteMode.Lax,
                     Path = "/",
                     MaxAge = TimeSpan.FromMinutes(10)
@@ -51,7 +51,7 @@ namespace GymTracker.Controllers
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = Request.IsHttps,
+                    Secure = true,
                     SameSite = SameSiteMode.Lax,
                     Path = "/",
                     MaxAge = TimeSpan.FromMinutes(10)
@@ -124,7 +124,7 @@ namespace GymTracker.Controllers
                     new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = Request.IsHttps,
+                        Secure = true,
                         SameSite = SameSiteMode.Lax,
                         MaxAge = TimeSpan.FromDays(7)
                     });
@@ -134,7 +134,7 @@ namespace GymTracker.Controllers
                     new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = Request.IsHttps,
+                        Secure = true,
                         SameSite = SameSiteMode.Lax,
                         MaxAge = TimeSpan.FromMinutes(10)
                     });
