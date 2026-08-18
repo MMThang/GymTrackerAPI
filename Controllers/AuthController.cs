@@ -126,6 +126,7 @@ namespace GymTracker.Controllers
                         HttpOnly = true,
                         Secure = true,
                         SameSite = SameSiteMode.None,
+                        Domain = "gym-tracker-app-navy.vercel.app",
                         MaxAge = TimeSpan.FromDays(7),
                         Path = "/api/Token/refresh-token"
                     });
@@ -137,6 +138,7 @@ namespace GymTracker.Controllers
                         HttpOnly = true,
                         Secure = true,
                         SameSite = SameSiteMode.None,
+                        Domain = "gym-tracker-app-navy.vercel.app",
                         MaxAge = TimeSpan.FromMinutes(10),
                         Path = "/"
                     });
