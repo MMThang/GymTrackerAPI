@@ -125,8 +125,9 @@ namespace GymTracker.Controllers
                     {
                         HttpOnly = true,
                         Secure = true,
-                        SameSite = SameSiteMode.Lax,
-                        MaxAge = TimeSpan.FromDays(7)
+                        SameSite = SameSiteMode.None,
+                        MaxAge = TimeSpan.FromDays(7),
+                        Path = "/api/Token/refresh-token"
                     });
                 Response.Cookies.Append(
                     "session",
@@ -135,8 +136,9 @@ namespace GymTracker.Controllers
                     {
                         HttpOnly = true,
                         Secure = true,
-                        SameSite = SameSiteMode.Lax,
-                        MaxAge = TimeSpan.FromMinutes(10)
+                        SameSite = SameSiteMode.None,
+                        MaxAge = TimeSpan.FromMinutes(10),
+                        Path = "/"
                     });
                 var frontendUrl = _configuration.GetValue<string>("FrontendUrl");
                 var allowedOrigins = _configuration.GetSection("AllowedOrigins").Get<string[]>()!;
