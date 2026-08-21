@@ -13,19 +13,16 @@ namespace GymTracker.Repositories
     public class GoogleAuthRepository : IGoogleAuth
     {
         private readonly GoogleOAuthSettings _googleOAuthSettings;
-        private readonly IRefreshToken _refreshTokenRepository;
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
         public GoogleAuthRepository(
             IOptions<GoogleOAuthSettings> googleOAuthOptions,
-            IRefreshToken refreshTokenRepository,
             HttpClient httpClient,
             IConfiguration configuration
         )
         {
             _googleOAuthSettings = googleOAuthOptions.Value;
-            _refreshTokenRepository = refreshTokenRepository;
             _httpClient = httpClient;
             _configuration = configuration;
         }
@@ -173,7 +170,7 @@ namespace GymTracker.Repositories
             };
         }
 
-        public async Task<UserLoginResponse> LoginWithGoogleAsync(
+        public async Task<User> FindOrCreateGoogleUserAsync(
             GoogleUserInfo googleUser)
         {
             await using var connection = GetConnection();
@@ -197,9 +194,7 @@ namespace GymTracker.Repositories
             if (externalLogin != null)
             {
                 // Google account already linked
-                return await GenerateLoginResponse(
-                    externalLogin.User
-                );
+                return externalLogin.User;
             }
 
             // 2. Find existing account by email
@@ -211,7 +206,7 @@ namespace GymTracker.Repositories
             if (existingUser != null)
             {
                 // Start account linking flow
-                // Don't generate JWT yet
+                // Don't create the OAuth login code yet
                 // Don't automatically link yet
 
                 throw new InvalidOperationException(
@@ -255,19 +250,7 @@ namespace GymTracker.Repositories
             );
 
             // 4. Now we know which GymTracker user this is
-            return await GenerateLoginResponse(newUser);
-        }
-
-        private async Task<UserLoginResponse> GenerateLoginResponse(User user)
-        {
-            var accessToken = _refreshTokenRepository.GenerateAccessToken(user);
-            var refreshToken = await _refreshTokenRepository.GenerateRefreshToken(user.UserId);
-
-            return new UserLoginResponse
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken
-            };
+            return newUser;
         }
 
         private static string GenerateCodeVerifier()

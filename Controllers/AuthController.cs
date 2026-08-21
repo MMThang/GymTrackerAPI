@@ -1,3 +1,4 @@
+using GymTracker.DTOs.UserDTOs;
 using GymTracker.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,11 +9,18 @@ namespace GymTracker.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IGoogleAuth _googleAuthRepository;
+        private readonly IOAuthLoginCode _oauthLoginCodeRepository;
+
         private readonly IConfiguration _configuration;
 
-        public AuthController(IGoogleAuth googleAuthRepository, IConfiguration configuration)
+        public AuthController(
+            IGoogleAuth googleAuthRepository,
+            IOAuthLoginCode oauthLoginCodeRepository,
+            IConfiguration configuration)
         {
             _googleAuthRepository = googleAuthRepository;
+            _oauthLoginCodeRepository = oauthLoginCodeRepository;
+
             _configuration = configuration;
         }
 
@@ -110,36 +118,17 @@ namespace GymTracker.Controllers
                     );
                 }
 
-                // 2. Exchange code and validate Google identity
+                // 2. Exchange Google's code and validate Google identity
                 var googleUser = await _googleAuthRepository.HandleCallbackAsync(code, nonce, codeVerifier);
 
-                // 3. Application authentication layer
-                var loginResponse = await _googleAuthRepository.LoginWithGoogleAsync(googleUser);
+                // 3. Find or create the application user
+                var user = await _googleAuthRepository.FindOrCreateGoogleUserAsync(googleUser);
 
+                // 4. Generate a short-lived, single-use one-time login code
+                var loginCode = await _oauthLoginCodeRepository.CreateLoginCode(user.UserId);
 
-                // 4. Redirect to Next.js
-                Response.Cookies.Append(
-                    "refreshToken",
-                    loginResponse.RefreshToken,
-                    new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.None,
-                        MaxAge = TimeSpan.FromDays(7),
-                        Path = "/api/Token/refresh-token"
-                    });
-                Response.Cookies.Append(
-                    "session",
-                    loginResponse.AccessToken,
-                    new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.None,
-                        MaxAge = TimeSpan.FromMinutes(10),
-                        Path = "/"
-                    });
+                // 5. Redirect to the frontend with ONLY the one-time code.
+                //    Never put access or refresh tokens in the URL.
                 var frontendUrl = _configuration.GetValue<string>("FrontendUrl");
                 var allowedOrigins = _configuration.GetSection("AllowedOrigins").Get<string[]>()!;
                 if (!allowedOrigins.Contains(frontendUrl))
@@ -147,7 +136,7 @@ namespace GymTracker.Controllers
                     throw new InvalidOperationException("FrontendUrl must match an entry in AllowedOrigins.");
                 }
                 return Redirect(
-                    $"{frontendUrl}/calendar"
+                    $"{frontendUrl}/calendar?code={loginCode}"
                 );
             }
             catch (UnauthorizedAccessException ex)
@@ -157,6 +146,31 @@ namespace GymTracker.Controllers
             catch (InvalidOperationException ex)
             {
                 return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("oauth/exchange")]
+        public async Task<IActionResult> Exchange(
+            [FromBody] OAuthExchangeRequestDTO request)
+        {
+            try
+            {
+                // Atomically validate and consume the one-time code.
+                var response = await _oauthLoginCodeRepository.ExchangeLoginCode(request.Code);
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {

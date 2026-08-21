@@ -21,6 +21,7 @@ namespace GymTracker.Data
         public DbSet<User> Users { get; set; }
         public DbSet<ExternalLogin> ExternalLogins { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<OAuthLoginCode> OAuthLoginCodes { get; set; }
         public DbSet<WorkoutSession> WorkoutSessions { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
         public DbSet<Set> Sets { get; set; }
@@ -44,6 +45,13 @@ namespace GymTracker.Data
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<OAuthLoginCode>()
+                .HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<OAuthLoginCode>()
+                .HasIndex(t => t.CodeHash);
             modelBuilder.Entity<WorkoutSession>()
                 .HasOne(t => t.User)
                 .WithMany(u => u.WorkoutSessions)
