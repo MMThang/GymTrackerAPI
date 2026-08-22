@@ -1,3 +1,4 @@
+using GymTracker.Entities;
 using GymTracker.Responses;
 
 namespace GymTracker.Interfaces
@@ -6,6 +7,6 @@ namespace GymTracker.Interfaces
     {
         GoogleAuthorizationResponse GetAuthorizationUrl();
         Task<GoogleUserInfo> HandleCallbackAsync(string code, string? nonce, string codeVerifier);
-        Task<UserLoginResponse> LoginWithGoogleAsync(GoogleUserInfo googleUser);
+        Task<User> FindOrCreateGoogleUserAsync(GoogleUserInfo googleUser);
     }
 }

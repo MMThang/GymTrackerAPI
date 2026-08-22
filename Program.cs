@@ -51,14 +51,14 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins(allowedOrigins)
                .AllowAnyHeader()
-               .AllowAnyMethod()
-               .AllowCredentials();
+               .AllowAnyMethod();
     });
 });
 
 builder.Services.Configure<GoogleOAuthSettings>(builder.Configuration.GetSection("GoogleOAuth"));
 builder.Services.AddScoped<IUser, UserRepository>();
 builder.Services.AddScoped<IRefreshToken, RefreshTokenRepository>();
+builder.Services.AddScoped<IOAuthLoginCode, OAuthLoginCodeRepository>();
 builder.Services.AddHttpClient<IGoogleAuth, GoogleAuthRepository>();
 builder.Services.AddScoped<IWorkoutSession, WorkoutSessionRepository>();
 builder.Services.AddScoped<IExercise, ExerciseRepository>();
