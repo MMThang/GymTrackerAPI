@@ -3,6 +3,7 @@ using GymTracker.Data;
 using GymTracker.Handler;
 using GymTracker.Interfaces;
 using GymTracker.Repositories;
+using GymTracker.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -63,6 +64,7 @@ builder.Services.AddHttpClient<IGoogleAuth, GoogleAuthRepository>();
 builder.Services.AddScoped<IWorkoutSession, WorkoutSessionRepository>();
 builder.Services.AddScoped<IExercise, ExerciseRepository>();
 builder.Services.AddScoped<ISet, SetRepository>();
+builder.Services.AddHostedService<DatabaseCleanupService>();
 
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase"))

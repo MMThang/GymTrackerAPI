@@ -45,13 +45,20 @@ namespace GymTracker.Data
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(x => x.ExpiryDate);
             modelBuilder.Entity<OAuthLoginCode>()
                 .HasOne(t => t.User)
                 .WithMany()
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<OAuthLoginCode>()
-                .HasIndex(t => t.CodeHash);
+                .HasIndex(t => t.CodeHash)
+                .IsUnique();
+            modelBuilder.Entity<OAuthLoginCode>()
+                .HasIndex(x => x.ExpiresAt);
+            modelBuilder.Entity<OAuthLoginCode>()
+                .HasIndex(x => x.UsedAt);
             modelBuilder.Entity<WorkoutSession>()
                 .HasOne(t => t.User)
                 .WithMany(u => u.WorkoutSessions)

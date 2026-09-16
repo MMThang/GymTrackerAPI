@@ -66,7 +66,7 @@ namespace GymTracker.Repositories
             if (string.IsNullOrEmpty(code))
             {
                 throw new UnauthorizedAccessException(
-                    "Invalid OAuth login code."
+                    "Empty code string"
                 );
             }
 
@@ -85,7 +85,7 @@ namespace GymTracker.Repositories
             if (record == null)
             {
                 throw new UnauthorizedAccessException(
-                    "Invalid OAuth login code."
+                    "Cannot find code"
                 );
             }
 
