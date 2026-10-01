@@ -28,12 +28,26 @@ namespace GymTracker.Services
                     var db = scope.ServiceProvider
                         .GetRequiredService<AppDBContext>();
 
+                    var now = DateTime.UtcNow;
+
                     await CleanupOAuthLoginCodesAsync(
                         db,
+                        now,
                         stoppingToken);
 
                     await CleanupRefreshTokensAsync(
                         db,
+                        now,
+                        stoppingToken);
+
+                    await CleanupEmailVerificationCodesAsync(
+                        db,
+                        now,
+                        stoppingToken);
+
+                    await CleanupUnverifiedUsersAsync(
+                        db,
+                        now,
                         stoppingToken);
                 }
                 catch (OperationCanceledException)
@@ -56,21 +70,49 @@ namespace GymTracker.Services
 
         private static async Task CleanupOAuthLoginCodesAsync(
             AppDBContext db,
+            DateTime now,
             CancellationToken cancellationToken)
         {
             await db.OAuthLoginCodes
                 .Where(x =>
-                    x.ExpiresAt <= DateTime.UtcNow ||
+                    x.ExpiresAt <= now ||
                     x.UsedAt != null)
                 .ExecuteDeleteAsync(cancellationToken);
         }
 
         private static async Task CleanupRefreshTokensAsync(
             AppDBContext db,
+            DateTime now,
             CancellationToken cancellationToken)
         {
             await db.RefreshTokens
-                .Where(x => x.ExpiryDate <= DateTime.UtcNow)
+                .Where(x => x.ExpiryDate <= now)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        private static async Task CleanupEmailVerificationCodesAsync(
+            AppDBContext db,
+            DateTime now,
+            CancellationToken cancellationToken)
+        {
+            await db.EmailVerificationCodes
+                .Where(x =>
+                    x.ExpiresAt <= now ||
+                    x.UsedAt != null)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        private static async Task CleanupUnverifiedUsersAsync(
+            AppDBContext db,
+            DateTime now,
+            CancellationToken cancellationToken)
+        {
+            DateOnly cutoff = DateOnly.FromDateTime(now.AddDays(1));
+
+            await db.Users
+                .Where(x =>
+                    !x.EmailVerified &&
+                    x.RegisterDate <= cutoff)
                 .ExecuteDeleteAsync(cancellationToken);
         }
     }

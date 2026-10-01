@@ -58,6 +58,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.Configure<GoogleOAuthSettings>(builder.Configuration.GetSection("GoogleOAuth"));
 builder.Services.AddScoped<IUser, UserRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRefreshToken, RefreshTokenRepository>();
 builder.Services.AddScoped<IOAuthLoginCode, OAuthLoginCodeRepository>();
 builder.Services.AddHttpClient<IGoogleAuth, GoogleAuthRepository>();
