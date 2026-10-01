@@ -22,12 +22,16 @@ namespace GymTracker.Data
         public DbSet<ExternalLogin> ExternalLogins { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<OAuthLoginCode> OAuthLoginCodes { get; set; }
+        public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
         public DbSet<WorkoutSession> WorkoutSessions { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
         public DbSet<Set> Sets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.Email)
+                .IsUnique();
             modelBuilder.Entity<ExternalLogin>()
                 .HasIndex(x => new
                 {
@@ -58,6 +62,15 @@ namespace GymTracker.Data
             modelBuilder.Entity<OAuthLoginCode>()
                 .HasIndex(x => x.ExpiresAt);
             modelBuilder.Entity<OAuthLoginCode>()
+                .HasIndex(x => x.UsedAt);
+            modelBuilder.Entity<EmailVerificationCode>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.EmailVerificationCodes)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<EmailVerificationCode>()
+                .HasIndex(x => x.ExpiresAt);
+            modelBuilder.Entity<EmailVerificationCode>()
                 .HasIndex(x => x.UsedAt);
             modelBuilder.Entity<WorkoutSession>()
                 .HasOne(t => t.User)

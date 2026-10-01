@@ -3,6 +3,7 @@ using System;
 using GymTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GymTracker.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260919035056_MakeUsernameOptionalAndAddUniqueEmailIndex")]
+    partial class MakeUsernameOptionalAndAddUniqueEmailIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,42 +24,6 @@ namespace GymTracker.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("GymTracker.Entities.EmailVerificationCode", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("OTPHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UsedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpiresAt");
-
-                    b.HasIndex("UsedAt");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("EmailVerificationCodes");
-                });
 
             modelBuilder.Entity("GymTracker.Entities.Exercise", b =>
                 {
@@ -257,17 +224,6 @@ namespace GymTracker.Migrations
                     b.ToTable("WorkoutSessions");
                 });
 
-            modelBuilder.Entity("GymTracker.Entities.EmailVerificationCode", b =>
-                {
-                    b.HasOne("GymTracker.Entities.User", "User")
-                        .WithMany("EmailVerificationCodes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("GymTracker.Entities.Exercise", b =>
                 {
                     b.HasOne("GymTracker.Entities.WorkoutSession", "WorkoutSession")
@@ -341,8 +297,6 @@ namespace GymTracker.Migrations
 
             modelBuilder.Entity("GymTracker.Entities.User", b =>
                 {
-                    b.Navigation("EmailVerificationCodes");
-
                     b.Navigation("ExternalLogins");
 
                     b.Navigation("RefreshTokens");
